@@ -1,0 +1,98 @@
+
+TASK 1
+-How many ports are open?
+Use nmap to find out
+
+
+What's the name of the CMS?
+Use Go buster to discover hidden directory /gallery
+
+GOBUSTER dir -u <ip address> -w /usr/shr/wordlist/dirbuster/wordlist-2.3...
+
+Gallery directory requires login.php to login, a username and password text box is provided.
+Since the extension for the url is php, it is likely to be using a sql database so we can try SQL injection to by pass login.
+
+' OR 1=1 -- '
+
+Alternatively we could have first look on exploit db for known vulnerability for simple image gallery system which would show that it is susceptible to SQL INJECTION
+
+After we login we discovered that a file upload is possible in the gallery system.
+So we try to upload a php reverse shell script into the server and set up a nc listener to receive the reverse shell.
+
+QN:What's the hash password of the admin user?
+
+
+FINDING MYSQl LOGIN CREDENTIALS
+Navigate to /var/www/html/gallery 
+In the directory we find initialise.php file, inside is the login credentials to the mysql db
+
+Before we login to my sql db. We have a dumb shell, we need to upgrade to a interactive shell to access mysql.
+
+Most linux system has python installed by default.
+We can check if there is python installed using
+Which python
+Which python2
+Which python3
+Or python 3 --version
+
+Since python is install we can use python to upgrade into an interactive shell!
+Run 3 commands to Upgrade shell
+
+1. Python3 -c "import pty;pty.spawn('/bin/bash')"
+
+-c means execute command in python
+-Import pty adds module for controlling terminal
+-Pty.spawn Spawn a process, and connect its controlling terminal with the current process’s standard io
+-/bin (binary) / bash( bash, the "Bourne Again Shell")
+
+2. EXPORT TERM=xterm
+
+command sets the terminal emulator to xterm
+
+
+3. Stty raw -echo; fg
+
+stty — set the options for a terminal device interface
+raw (-raw) If set, change the modes of the terminal so that no input or. output processing is performed
+-echo When you disable it, your typing is not echoed back to you, which is why it seems as if the terminal is hanging
+-FG a command that moves a background process on your current Linux shell to the foreground
+
+Next step is to login and enumerate mysql
+Mysql -u username -p
+
+Then show databases;
+
+If no ; is used to end statement it continues to break out of it type \g and enter
+
+Show tables to find tables
+
+Finally Select * from users
+
+
+QN: What's the user flag?
+This is solved by finding mike's password in a log file in /var/log/mike_back_Up through Manuel enumeration or linpeas
+
+
+TASK 2 GAIN ROOT
+
+Switch users from www-data( default ubuntu user) to mike
+
+Su mike
+Enter mike's passwd
+
+Sudo -l
+
+Leads to a file that allows mike to run nano as root
+
+USE GTFO BIN to see how to SU with nano
+
+Run the rootkit.sh to escalate privilege 
+
+Look for root flag and cat it
+
+
+
+
+ 
+
+
